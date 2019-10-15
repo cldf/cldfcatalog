@@ -95,3 +95,42 @@ class Repository:
         res['dc:created'] = self.describe()
         res.update({'dc:{0}'.format(k): dc[k] for k in sorted(dc)})
         return res
+
+
+def get_test_repo(directory, remote_url=None, tags=None, branches=None):
+    """
+    Since mocking a git repo is somewhat difficult, we provide this function to create a "real"
+    git repository for testing.
+
+    :param directory: Parent directory in which a repo called `repo` will be initialized.
+    :param remote_url: URL to set for a remote called `origin`.
+    :param tags: `list` of tags that should be available in the repo.
+    :param branches: `list` of branches that shoud be available in the repo.
+    :return: initialized `git.Repo` instance.
+
+    This function may be used for pytest fixtures, e.g.
+    ```python
+    @pytest.fixture
+    def tmprepo(tmpdir):
+        return get_test_repo(str(tmpdir))
+    ```
+    """
+    wd = pathlib.Path(directory) / 'repo'
+    repo = git.Repo.init(str(wd))
+
+    fname = wd / 'README.md'
+    fname.write_text('test', encoding='utf-8')
+    repo.index.add([str(fname)])
+    repo.index.commit("initial commit")
+    repo.git.checkout('master')
+
+    for tag in (tags or []):
+        repo.create_tag(tag)
+
+    for branch in (branches or []):
+        repo.git.branch(branch)
+
+    if remote_url:
+        repo.create_remote('origin', url=remote_url)
+
+    return repo

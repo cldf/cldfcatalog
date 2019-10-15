@@ -1,4 +1,3 @@
-import git
 import pytest
 
 
@@ -7,13 +6,8 @@ def tmprepo(tmpdir):
     """
     Turns `tmpdir` into a git repository.
     """
-    repo = git.Repo.init(str(tmpdir.join('repo')))
-    fname = tmpdir.join('repo', 'README.md')
-    fname.write_text('abc', encoding='utf-8')
-    repo.index.add([str(fname)])
-    repo.index.commit("initial commit")
-    repo.git.checkout('master')
-    repo.create_tag('v1.0')
-    repo.git.branch('other')
-    repo.create_remote('origin', url='https://github.com/org/repo.git')
+    from cldfcatalog.repository import get_test_repo
+
+    repo = get_test_repo(
+        str(tmpdir), remote_url='https://github.com/org/repo.git', tags=['v1.0'], branches=['other'])
     return repo.working_dir

@@ -5,7 +5,7 @@ from cldfcatalog.catalog import *
 
 @pytest.fixture
 def catalog(tmprepo):
-    return Catalog(tmprepo, 'other')
+    return Catalog(tmprepo.working_dir, 'other')
 
 
 def test_init_noapi():
@@ -45,9 +45,9 @@ def test_context_manager(catalog):
 def test_context_manager_no_branch(tmprepo):
     from cldfcatalog.repository import Repository
 
-    r = Repository(tmprepo)
+    r = Repository(tmprepo.working_dir)
     r.checkout('v1.0')
-    with Catalog(tmprepo, 'master') as cat:
+    with Catalog(tmprepo.working_dir, 'master') as cat:
         assert cat.active_branch == 'master'
     assert cat.active_branch is None
     assert cat.describe() == 'v1.0'

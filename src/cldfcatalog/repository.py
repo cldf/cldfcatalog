@@ -79,6 +79,12 @@ class Repository:
     def describe(self):
         return self.repo.git.describe('--always', '--tags')
 
+    def hash(self):
+        return self.describe().split('-g')[-1]
+
+    def is_dirty(self):
+        return self.repo.is_dirty()
+
     def checkout(self, spec):
         return self.repo.git.checkout(spec)
 

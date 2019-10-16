@@ -10,4 +10,5 @@ def tmprepo(tmpdir):
 
     repo = get_test_repo(
         str(tmpdir), remote_url='https://github.com/org/repo.git', tags=['v1.0'], branches=['other'])
-    return repo.working_dir
+    return repo
+

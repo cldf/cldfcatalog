@@ -5,6 +5,9 @@ accompanying Python API to access the data.
 This module provides functionality for accessing such catalogs, and in particular specified
 versions of the catalog (repository).
 """
+import re
+import sys
+
 from cldfcatalog.repository import Repository
 
 __all__ = ['Catalog']
@@ -63,3 +66,17 @@ class Catalog(Repository):
         if self.__api__ and self._api is None:
             self._api = self.__api__(self.dir)
         return self._api
+
+    @classmethod
+    def api_version(cls):
+        if cls.__api__:
+            try:
+                return sys.modules[cls.__api__.__module__.split('.')[0]].__version__
+            except Exception:  # pragma: no cover
+                pass
+
+    def iter_versions(self):
+        for line in reversed(self.repo.git.tag('-n').split('\n')):
+            line = line.strip()
+            if line.startswith('v'):
+                yield re.split('\s+', line, maxsplit=1)

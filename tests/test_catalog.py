@@ -28,6 +28,14 @@ def test_init_api(mocker):
     assert Cat('').cli_name() == 'abc'
 
 
+def test_api_version():
+    class Cat(Catalog):
+        __api__ = Catalog
+        __cli_name__ = 'abc'
+
+    assert Cat.api_version()
+
+
 def test_init_norepos(tmpdir):
     with pytest.raises(ValueError):
         _ = Catalog(str(tmpdir))
@@ -51,3 +59,8 @@ def test_context_manager_no_branch(tmprepo):
         assert cat.active_branch == 'master'
     assert cat.active_branch is None
     assert cat.describe() == 'v1.0'
+
+
+def test_iter_versions(tmprepo):
+    cat = Catalog(tmprepo.working_dir)
+    assert len(list(cat.iter_versions())) == 1

@@ -23,6 +23,14 @@ class Repository:
             raise ValueError('invalid git repository: {0}'.format(path))
         self._url = None
 
+    def update(self):
+        """
+        Run `git fetch` for each remote.
+
+        :return: `list` of `FetchInfo` objects, one per remote.
+        """
+        return [remote.fetch()[0] for remote in self.repo.remotes]  # pragma: no cover
+
     @property
     def dir(self):
         """

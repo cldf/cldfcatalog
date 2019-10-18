@@ -20,4 +20,3 @@ def test_Repository(tmprepo):
     assert repository.is_dirty()
     tmprepo.index.commit("commit")
     assert len(repository.hash()) == 7
-

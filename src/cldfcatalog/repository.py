@@ -9,7 +9,7 @@ import collections
 import git
 import git.exc
 
-__all__ = ['Repository']
+__all__ = ['Repository', 'get_test_repo']
 
 
 class Repository:
@@ -22,6 +22,13 @@ class Repository:
         except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError):
             raise ValueError('invalid git repository: {0}'.format(path))
         self._url = None
+
+    @classmethod
+    def clone(cls, url, target):
+        target = pathlib.Path(target)
+        assert (not target.exists()) and target.parent.exists() and target.parent.is_dir()
+        git.Git(str(target.parent)).clone(url, target.name)
+        return cls(target)
 
     def update(self):
         """

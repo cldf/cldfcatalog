@@ -40,3 +40,31 @@ v4.0
 >>> glottolog.describe()
 'v4.0-52-ga4cfc90'
 ```
+
+
+## Configuration
+
+`cldfcatalog` supports discovery of local paths to catalog clones via a configuration file.
+If a file `catalog.ini` is found at `appdirs.user_config_dir('cldf')` (see [appdirs](https://pypi.org/project/appdirs/)) is found, its `clones` section is used as a
+mapping from `Catalog.cli_name()` to clone path. Thus, with a configuration
+```ini
+[clones]
+clts = /home/forkel/.config/cldf/clts
+```
+a catalog can be intialized as
+```python
+with Catalog.from_config('clts', tag='v1.0'):
+    ...
+```
+
+When cloning a catalog,
+running `Catalog.clone`,`appdirs.user_config_dir('cldf')` will be used as directory for
+the clone, and the path will be written to the config file.
+
+To add add paths to a config file use it as context manager:
+```python
+from cldfcatalog import Config
+
+with Config.from_file() as cfg:
+    cfg.add_clone(key, path)
+```

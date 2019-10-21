@@ -20,3 +20,7 @@ def test_Repository(tmprepo):
     assert repository.is_dirty()
     tmprepo.index.commit("commit")
     assert len(repository.hash()) == 7
+
+
+def test_clone(tmpdir, Git):
+    assert Repository.clone('http://example.org', str(tmpdir.join('xy'))).dir.name == 'xy'

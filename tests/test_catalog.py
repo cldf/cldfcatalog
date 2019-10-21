@@ -1,3 +1,5 @@
+import pathlib
+
 import pytest
 
 from cldfcatalog.catalog import *
@@ -64,3 +66,12 @@ def test_context_manager_no_branch(tmprepo):
 def test_iter_versions(tmprepo):
     cat = Catalog(tmprepo.working_dir)
     assert len(list(cat.iter_versions())) == 1
+
+
+def test_clone(appdirs, Git):
+    class MyCat(Catalog):
+        pass
+    MyCat.clone('http://example.org')
+    # The default name of a Catalog is the lowercase class name:
+    assert pathlib.Path(appdirs).joinpath('mycat').exists()
+    assert MyCat.from_config().dir == pathlib.Path(appdirs).joinpath('mycat')

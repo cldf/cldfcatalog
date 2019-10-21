@@ -9,6 +9,7 @@ import re
 import sys
 
 from cldfcatalog.repository import Repository
+from cldfcatalog.config import Config
 
 __all__ = ['Catalog']
 
@@ -37,6 +38,22 @@ class Catalog(Repository):
 
         # Instantiating the API may be costly, thus, we cache it.
         self._api = None
+
+    @classmethod
+    def default_location(cls):
+        return Config.dir().joinpath(cls.cli_name())
+
+    @classmethod
+    def clone(cls, url, target=None):
+        res = cls(Repository.clone(url, target or cls.default_location()).dir)
+        with Config.from_file() as cfg:
+            cfg.add_clone(res.cli_name(), res.dir)
+        return res
+
+    @classmethod
+    def from_config(cls, key=None, fname=None, tag=None):
+        cfg = Config.from_file(fname)
+        return cls(cfg.get_clone(key or cls.cli_name()), tag=tag)
 
     def __enter__(self):
         if self.tag:

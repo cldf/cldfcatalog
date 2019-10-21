@@ -20,6 +20,7 @@ setup(
     python_requires='>=3.5',
     install_requires=[
         'gitpython',
+        'appdirs',
     ],
     extras_require={
         'dev': ['flake8', 'wheel', 'twine'],

@@ -2,7 +2,7 @@
 
 Utilities to use `git` repository clones and reference catalogs.
 
-[![Build Status](https://travis-ci.org/cldf/cldfcatalog.svg?branch=master)](https://travis-ci.org/cldf/cldfcatalog)
+[![Build Status](https://github.com/cldf/cldfcatalog/workflows/tests/badge.svg)](https://github.com/cldf/cldfcatalog/actions?query=workflow%3Atests)
 [![codecov](https://codecov.io/gh/cldf/cldfcatalog/branch/master/graph/badge.svg)](https://codecov.io/gh/cldf/cldfcatalog)
 [![PyPI](https://img.shields.io/pypi/v/cldfcatalog.svg)](https://pypi.org/project/cldfcatalog)
 

@@ -96,4 +96,4 @@ class Catalog(Repository):
         for line in reversed(self.repo.git.tag('-n').split('\n')):
             line = line.strip()
             if line.startswith('v'):
-                yield re.split('\s+', line, maxsplit=1)
+                yield re.split(r'\s+', line, maxsplit=1)

@@ -79,7 +79,7 @@ class Repository:
         :return: GitHub repository name in the form "ORG/REPO", or `None`, if no matching \
         `self.url` is found.
         """
-        match = re.search('github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)', self.url or '')
+        match = re.search(r'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)', self.url or '')
         if match:
             return match.group('org') + '/' + match.group('repo')
 

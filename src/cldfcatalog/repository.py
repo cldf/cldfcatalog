@@ -4,10 +4,10 @@ functionality, following the [Facade pattern](https://en.wikipedia.org/wiki/Faca
 """
 import re
 import pathlib
-import collections
 
 import git
 import git.exc
+from pycldf.dataset import GitRepository
 
 __all__ = ['Repository', 'get_test_repo']
 
@@ -107,15 +107,13 @@ class Repository:
         """
         A repository description in JSON-LD - suitable for inclusion in CLDF metadata.
         """
-        res = collections.OrderedDict([
-            ('rdf:type', 'prov:Entity'),
-            ('dc:title', self.__class__.__name__),
-        ])
-        if self.url:
-            res['rdf:about'] = self.url
-        res['dc:created'] = self.describe()
-        res.update({'dc:{0}'.format(k): dc[k] for k in sorted(dc)})
-        return res
+        return GitRepository(
+            self.url,
+            clone=self.dir,
+            title=self.__class__.__name__,
+            version=self.describe(),
+            **{k.replace('dc:', ''): v for k, v in dc.items()},
+        ).json_ld()
 
 
 def get_test_repo(directory, remote_url=None, tags=None, branches=None):

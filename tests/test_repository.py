@@ -11,8 +11,10 @@ def test_invalid_repo(tmpdir):
 def test_Repository(tmprepo):
     repository = Repository(tmprepo.working_dir)
     assert repository.url == 'https://github.com/org/repo'
-    ld = repository.json_ld(author='The Author')
+    ld = repository.json_ld(author='The Author', **{'dc:format': 'CLDF'})
     assert 'dc:author' in ld
+    assert 'dc:format' in ld
+    assert 'dc:title' in ld
     assert repository.github_repo == 'org/repo'
     assert not repository.is_dirty()
 

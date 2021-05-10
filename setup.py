@@ -19,6 +19,7 @@ setup(
     platforms='any',
     python_requires='>=3.6',
     install_requires=[
+        'pycldf',
         'gitpython',
         'appdirs',
     ],

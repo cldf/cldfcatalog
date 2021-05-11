@@ -108,7 +108,7 @@ class Repository:
         A repository description in JSON-LD - suitable for inclusion in CLDF metadata.
         """
         return GitRepository(
-            self.url,
+            self.url or self.dir.name,
             clone=self.dir,
             title=self.__class__.__name__,
             version=self.describe(),

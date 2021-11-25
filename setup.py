@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='cldfcatalog',
-    version='1.3.3.dev0',
+    version='1.4.0',
     author='Robert Forkel',
     author_email='dlce.rdm@eva.mpg.de',
     description='Python library to access CLDF reference catalogs',

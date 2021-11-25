@@ -8,6 +8,7 @@ import pathlib
 import git
 import git.exc
 from pycldf.dataset import GitRepository
+from pycldf.util import sanitize_url
 
 __all__ = ['Repository', 'get_test_repo']
 
@@ -68,7 +69,7 @@ class Repository:
                 url = self.repo.remotes.origin.url
                 if url.endswith('.git'):
                     url = url[:-4]
-                self._url = url
+                self._url = sanitize_url(url)
             except AttributeError:  # pragma: no cover
                 pass
         return self._url

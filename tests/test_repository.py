@@ -24,5 +24,11 @@ def test_Repository(tmprepo):
     assert len(repository.hash()) == 7
 
 
+def test_Repository_url(tmp_path):
+    repository = Repository(
+        get_test_repo(tmp_path / 'repo', remote_url='http://user:pwd@example.com').working_dir)
+    assert repository.url == 'http://example.com'
+
+
 def test_clone(tmpdir, Git):
     assert Repository.clone('http://example.org', str(tmpdir.join('xy'))).dir.name == 'xy'

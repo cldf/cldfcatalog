@@ -5,7 +5,7 @@ setup(
     name='cldfcatalog',
     version='1.3.3.dev0',
     author='Robert Forkel',
-    author_email='forkel@shh.mpg.de',
+    author_email='dlce.rdm@eva.mpg.de',
     description='Python library to access CLDF reference catalogs',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
@@ -43,6 +43,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],

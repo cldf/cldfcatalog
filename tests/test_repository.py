@@ -5,7 +5,14 @@ from cldfcatalog.repository import *
 
 def test_invalid_repo(tmpdir):
     with pytest.raises(ValueError):
+        Repository(str(tmpdir / 'no'))
+
+    with pytest.raises(ValueError):
         Repository(str(tmpdir))
+
+    repo = Repository(str(tmpdir), not_git_repo_ok=True)
+    with pytest.raises(ValueError):
+        repo.update()
 
 
 def test_Repository(tmprepo):

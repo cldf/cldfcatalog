@@ -27,12 +27,14 @@ class Catalog(Repository):
     # scenarios, if the default - the lowercased class name - is not useful.
     __cli_name__ = None
 
-    def __init__(self, path, tag=None):
+    def __init__(self, path, tag=None, not_git_repo_ok=True):
         if isinstance(self.__api__, str):
             raise ValueError(
                 'API for catalog {0} is not available, please install {1}!'.format(
                     self.__class__.__name__, self.__api__))
-        super().__init__(path)
+        super().__init__(path, not_git_repo_ok=not_git_repo_ok)
+        if not self.repo and tag:
+            raise ValueError('A tag can only be specified for cloned repositories!')
         self._prev_head = None  # We want to restore the previous state upon exiting.
         self.tag = tag
 

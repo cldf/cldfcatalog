@@ -40,7 +40,10 @@ def test_api_version():
 
 def test_init_norepos(tmpdir):
     with pytest.raises(ValueError):
-        _ = Catalog(str(tmpdir))
+        _ = Catalog(str(tmpdir), not_git_repo_ok=False)
+
+    with pytest.raises(ValueError):
+        _ = Catalog(str(tmpdir), tag='v1')
 
 
 def test_context_manager(catalog):

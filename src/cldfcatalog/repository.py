@@ -3,6 +3,7 @@ This module provides a thin wrapper around `git.Repo`, exposing only a small por
 functionality, following the [Facade pattern](https://en.wikipedia.org/wiki/Facade_pattern).
 """
 import re
+import typing
 import pathlib
 
 import git
@@ -15,13 +16,24 @@ __all__ = ['Repository', 'get_test_repo']
 
 class Repository:
     """
-    A (clone of a) git repository.
+    A (clone of a) git repository (or simply a directory).
     """
-    def __init__(self, path):
+    def __init__(self, path: typing.Union[str, pathlib.Path], not_git_repo_ok: bool = False):
+        """
+        :param non_git_repo_ok: If `True`, a plain directory will work as `path`, too. But the \
+        `Repository` instance will have limited functionality.
+        """
+        path = pathlib.Path(path)
+        if not path.exists():
+            raise ValueError('invalid repository path: {0}'.format(path))
+        self._dir = None
         try:
             self.repo = git.Repo(str(path))
         except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError):
-            raise ValueError('invalid git repository: {0}'.format(path))
+            if not not_git_repo_ok:
+                raise ValueError('invalid git repository: {0}'.format(path))
+            self.repo = None
+            self._dir = path
         self._url = None
 
     @classmethod
@@ -31,12 +43,17 @@ class Repository:
         git.Git(str(target.parent)).clone(url, target.name)
         return cls(target)
 
+    def _require_repo(self, attr):
+        if not self.repo:
+            raise ValueError('{} is not supported for repository exports'.format(attr))
+
     def update(self):
         """
         Run `git fetch` for each remote.
 
         :return: `list` of `FetchInfo` objects, one per remote.
         """
+        self._require_repo('update')
         return [remote.fetch()[0] for remote in self.repo.remotes]  # pragma: no cover
 
     @property
@@ -44,13 +61,14 @@ class Repository:
         """
         :return: The path of the repository clone as `pathlib.Path`.
         """
-        return pathlib.Path(self.repo.working_dir)
+        return pathlib.Path(self.repo.working_dir) if self.repo else self._dir
 
     @property
     def active_branch(self):
         """
         :return: Name of the active branch or `None`, if in "detached HEAD" state.
         """
+        self._require_repo('active_branch')
         try:
             return self.repo.active_branch.name
         except TypeError:
@@ -65,6 +83,7 @@ class Repository:
         not change, we cache the result.
         """
         if self._url is None:
+            self._require_repo('url')
             try:
                 url = self.repo.remotes.origin.url
                 if url.endswith('.git'):
@@ -90,18 +109,22 @@ class Repository:
         :return: `list` of tags available for the repository. A tag can be used as `spec` argument \
         for `Repository.checkout`
         """
+        self._require_repo('tags')
         return self.repo.git.tag().split()
 
     def describe(self):
+        self._require_repo('describe')
         return self.repo.git.describe('--always', '--tags')
 
     def hash(self):
         return self.describe().split('-g')[-1]
 
     def is_dirty(self):
+        self._require_repo('is_dirty')
         return self.repo.is_dirty()
 
     def checkout(self, spec):
+        self._require_repo('checkout')
         return self.repo.git.checkout(spec)
 
     def json_ld(self, **dc):
@@ -112,7 +135,7 @@ class Repository:
             self.url or self.dir.name,
             clone=self.dir,
             title=self.__class__.__name__,
-            version=self.describe(),
+            version=None if not self.repo else self.describe(),
             **{k.replace('dc:', ''): v for k, v in dc.items()},
         ).json_ld()
 

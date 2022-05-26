@@ -11,6 +11,7 @@ def test_invalid_repo(tmpdir):
         Repository(str(tmpdir))
 
     repo = Repository(str(tmpdir), not_git_repo_ok=True)
+    assert repo.url is None
     with pytest.raises(ValueError):
         repo.update()
 

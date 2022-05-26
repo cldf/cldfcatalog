@@ -23,8 +23,8 @@ class Repository:
         :param non_git_repo_ok: If `True`, a plain directory will work as `path`, too. But the \
         `Repository` instance will have limited functionality.
         """
-        path = pathlib.Path(path)
-        if not path.exists():
+        path = pathlib.Path(path) if path is not None else path
+        if path is None or not path.exists():
             raise ValueError('invalid repository path: {0}'.format(path))
         self._dir = None
         try:
@@ -75,7 +75,7 @@ class Repository:
             return None
 
     @property
-    def url(self) -> str:
+    def url(self) -> typing.Optional[str]:
         """
         :return: The URL of the remote called `origin` - if it is set, else `None`.
 
@@ -83,7 +83,8 @@ class Repository:
         not change, we cache the result.
         """
         if self._url is None:
-            self._require_repo('url')
+            if not self.repo:
+                return
             try:
                 url = self.repo.remotes.origin.url
                 if url.endswith('.git'):

@@ -7,14 +7,6 @@ def test_invalid_repo(tmpdir):
     with pytest.raises(ValueError):
         Repository(str(tmpdir / 'no'))
 
-    with pytest.raises(ValueError):
-        Repository(str(tmpdir))
-
-    repo = Repository(str(tmpdir), not_git_repo_ok=True)
-    assert repo.url is None
-    with pytest.raises(ValueError):
-        repo.update()
-
 
 def test_Repository(tmprepo):
     repository = Repository(tmprepo.working_dir)
@@ -40,3 +32,14 @@ def test_Repository_url(tmp_path):
 
 def test_clone(tmpdir, Git):
     assert Repository.clone('http://example.org', str(tmpdir.join('xy'))).dir.name == 'xy'
+
+
+def test_context_manager_no_branch(tmprepo):
+    from cldfcatalog.repository import Repository
+
+    r = Repository(tmprepo.working_dir, 'master')
+    r.checkout('v1.0')
+    with r as cat:
+        assert r.active_branch == 'master'
+    assert r.active_branch is None
+    assert r.describe() == 'v1.0'

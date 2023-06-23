@@ -14,6 +14,8 @@ CLONES = 'clones'
 class Config(configparser.ConfigParser):
     """
     A config file for the cli.
+
+    Basically a persisted mapping of names to absolute local paths.
     """
     def __init__(self):
         self._files = None

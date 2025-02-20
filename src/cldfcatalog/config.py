@@ -1,6 +1,7 @@
 """
 Configfile support for discovering local clones of Catalogs.
 """
+import typing
 import pathlib
 import collections
 import configparser
@@ -32,7 +33,7 @@ class Config(configparser.ConfigParser):
         super().read(filenames, encoding=encoding)
 
     @staticmethod
-    def dir():
+    def dir() -> pathlib.Path:
         res = pathlib.Path(platformdirs.user_config_dir('cldf'))
         if not res.exists():
             res.mkdir(parents=True, exist_ok=True)
@@ -40,17 +41,17 @@ class Config(configparser.ConfigParser):
 
     # Note: `fname` must not be defined at import, because we need to patch `appdirs` for tests!
     @staticmethod
-    def fname():
+    def fname() -> pathlib.Path:
         return Config.dir() / 'catalog.ini'
 
     @property
-    def clones(self):
+    def clones(self) -> configparser.SectionProxy:
         if CLONES not in self.sections():
             self[CLONES] = collections.OrderedDict()
         return self[CLONES]
 
     @classmethod
-    def from_file(cls, fname=None):
+    def from_file(cls, fname=None) -> 'Config':
         cfg = cls()
         cfg.read(str(fname or cls.fname()))
         return cfg
@@ -59,10 +60,10 @@ class Config(configparser.ConfigParser):
         with (fname or self.fname()).open('w', encoding='utf8') as fp:
             self.write(fp)
 
-    def add_clone(self, key, path):
+    def add_clone(self, key: str, path: typing.Union[str, pathlib.Path]):
         self.clones[key] = str(pathlib.Path(path).resolve())
 
-    def get_clone(self, key):
+    def get_clone(self, key: str) -> pathlib.Path:
         try:
             return pathlib.Path(self.clones[key])
         except KeyError:

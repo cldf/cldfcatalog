@@ -7,6 +7,8 @@ versions of the catalog (repository).
 """
 import re
 import sys
+import typing
+import pathlib
 
 from cldfcatalog.repository import Repository
 from cldfcatalog.config import Config
@@ -27,7 +29,7 @@ class Catalog(Repository):
     # scenarios, if the default - the lowercased class name - is not useful.
     __cli_name__ = None
 
-    def __init__(self, path, tag=None, not_git_repo_ok=True):
+    def __init__(self, path, tag: str = None, not_git_repo_ok: bool = True):
         if isinstance(self.__api__, str):
             raise ValueError(
                 'API for catalog {0} is not available, please install {1}!'.format(
@@ -42,18 +44,18 @@ class Catalog(Repository):
         self._api = None
 
     @classmethod
-    def default_location(cls):
+    def default_location(cls) -> pathlib.Path:
         return Config.dir().joinpath(cls.cli_name())
 
     @classmethod
-    def clone(cls, url, target=None):
+    def clone(cls, url, target: typing.Optional[pathlib.Path] = None) -> 'Catalog':
         res = cls(Repository.clone(url, target or cls.default_location()).dir)
         with Config.from_file() as cfg:
             cfg.add_clone(res.cli_name(), res.dir)
         return res
 
     @classmethod
-    def from_config(cls, key=None, fname=None, tag=None):
+    def from_config(cls, key=None, fname=None, tag: str = None) -> 'Catalog':
         cfg = Config.from_file(fname)
         return cls(cfg.get_clone(key or cls.cli_name()), tag=tag)
 
@@ -77,7 +79,7 @@ class Catalog(Repository):
             self._prev_head = None
 
     @classmethod
-    def cli_name(cls):
+    def cli_name(cls) -> str:
         return cls.__cli_name__ or cls.__name__.lower()
 
     @property
@@ -87,14 +89,14 @@ class Catalog(Repository):
         return self._api
 
     @classmethod
-    def api_version(cls):
+    def api_version(cls) -> typing.Union[str, None]:
         if cls.__api__:
             try:
                 return sys.modules[cls.__api__.__module__.split('.')[0]].__version__
             except Exception:  # pragma: no cover
                 pass
 
-    def iter_versions(self):
+    def iter_versions(self) -> typing.Generator[typing.List[str], None, None]:
         for line in reversed(self.repo.git.tag('-n').split('\n')):
             line = line.strip()
             if line.startswith('v'):

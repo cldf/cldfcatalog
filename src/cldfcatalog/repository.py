@@ -75,7 +75,7 @@ class Repository:
             return None
 
     @property
-    def url(self) -> typing.Optional[str]:
+    def url(self) -> typing.Union[str, None]:
         """
         :return: The URL of the remote called `origin` - if it is set, else `None`.
 
@@ -84,7 +84,7 @@ class Repository:
         """
         if self._url is None:
             if not self.repo:
-                return
+                return None
             try:
                 url = self.repo.remotes.origin.url
                 if url.endswith('.git'):

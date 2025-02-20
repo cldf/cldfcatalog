@@ -44,7 +44,7 @@ v4.0
 ## Configuration
 
 `cldfcatalog` supports discovery of local paths to catalog clones via a configuration file.
-If a file `catalog.ini` is found at `appdirs.user_config_dir('cldf')` (see [appdirs](https://pypi.org/project/appdirs/)) is found, its `clones` section is used as a
+If a file `catalog.ini` is found at `platformdirs.user_config_dir('cldf')` (see [platformdirs](https://pypi.org/project/platformdirs/)) is found, its `clones` section is used as a
 mapping from `Catalog.cli_name()` to clone path. Thus, with a configuration
 ```ini
 [clones]

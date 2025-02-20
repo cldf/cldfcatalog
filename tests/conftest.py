@@ -35,6 +35,6 @@ def Git(tmpdir, mocker):
 @pytest.fixture
 def appdirs(tmpdir, mocker):
     mocker.patch(
-        'cldfcatalog.config.appdirs',
+        'cldfcatalog.config.platformdirs',
         mocker.Mock(user_config_dir=mocker.Mock(return_value=str(tmpdir.join('u')))))
     return str(tmpdir.join('u'))

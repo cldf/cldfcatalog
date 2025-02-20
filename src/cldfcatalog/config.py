@@ -5,7 +5,7 @@ import pathlib
 import collections
 import configparser
 
-import appdirs
+import platformdirs
 
 __all__ = ['Config']
 CLONES = 'clones'
@@ -33,7 +33,7 @@ class Config(configparser.ConfigParser):
 
     @staticmethod
     def dir():
-        res = pathlib.Path(appdirs.user_config_dir('cldf'))
+        res = pathlib.Path(platformdirs.user_config_dir('cldf'))
         if not res.exists():
             res.mkdir(parents=True, exist_ok=True)
         return res

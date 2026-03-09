@@ -3,7 +3,7 @@ This module provides a thin wrapper around `git.Repo`, exposing only a small por
 functionality, following the [Facade pattern](https://en.wikipedia.org/wiki/Facade_pattern).
 """
 import re
-import typing
+from typing import Union, Optional
 import pathlib
 
 import git
@@ -13,31 +13,34 @@ from pycldf.util import sanitize_url
 
 __all__ = ['Repository', 'get_test_repo']
 
+PathType = Union[str, pathlib.Path]
+
 
 class Repository:
     """
     A (clone of a) git repository (or simply a directory).
     """
-    def __init__(self, path: typing.Union[str, pathlib.Path], not_git_repo_ok: bool = False):
+    def __init__(self, path: PathType, not_git_repo_ok: bool = False):
         """
         :param non_git_repo_ok: If `True`, a plain directory will work as `path`, too. But the \
         `Repository` instance will have limited functionality.
         """
         path = pathlib.Path(path) if path is not None else path
         if path is None or not path.exists():
-            raise ValueError('invalid repository path: {0}'.format(path))
+            raise ValueError(f'invalid repository path: {path}')
         self._dir = None
         try:
-            self.repo = git.Repo(str(path))
-        except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError):
+            self.repo: Optional[git.Repo] = git.Repo(str(path))
+        except (git.exc.NoSuchPathError, git.exc.InvalidGitRepositoryError) as e:
             if not not_git_repo_ok:
-                raise ValueError('invalid git repository: {0}'.format(path))
+                raise ValueError(f'invalid git repository: {path}') from e
             self.repo = None
             self._dir = path
         self._url = None
 
     @classmethod
-    def clone(cls, url: str, target: typing.Union[str, pathlib.Path]):
+    def clone(cls, url: str, target: PathType) -> 'Repository':
+        """Clone the repository identified by url to target."""
         target = pathlib.Path(target)
         assert (not target.exists()) and target.parent.exists() and target.parent.is_dir()
         git.Git(str(target.parent)).clone(url, target.name)
@@ -45,7 +48,7 @@ class Repository:
 
     def _require_repo(self, attr):
         if not self.repo:
-            raise ValueError('{} is not supported for repository exports'.format(attr))
+            raise ValueError(f'{attr} is not supported for repository exports')
 
     def update(self):
         """
@@ -64,7 +67,7 @@ class Repository:
         return pathlib.Path(self.repo.working_dir) if self.repo else self._dir
 
     @property
-    def active_branch(self) -> typing.Union[None, str]:
+    def active_branch(self) -> Optional[str]:
         """
         :return: Name of the active branch or `None`, if in "detached HEAD" state.
         """
@@ -75,7 +78,7 @@ class Repository:
             return None
 
     @property
-    def url(self) -> typing.Union[str, None]:
+    def url(self) -> Optional[str]:
         """
         :return: The URL of the remote called `origin` - if it is set, else `None`.
 
@@ -95,7 +98,7 @@ class Repository:
         return self._url
 
     @property
-    def github_repo(self) -> typing.Union[None, str]:
+    def github_repo(self) -> Optional[str]:
         """
         :return: GitHub repository name in the form "ORG/REPO", or `None`, if no matching \
         `self.url` is found.
@@ -103,9 +106,10 @@ class Repository:
         match = re.search(r'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)', self.url or '')
         if match:
             return match.group('org') + '/' + match.group('repo')
+        return None  # pragma: no cover
 
     @property
-    def tags(self) -> typing.List[str]:
+    def tags(self) -> list[str]:
         """
         :return: `list` of tags available for the repository. A tag can be used as `spec` argument \
         for `Repository.checkout`
@@ -113,18 +117,18 @@ class Repository:
         self._require_repo('tags')
         return self.repo.git.tag().split()
 
-    def describe(self) -> str:
+    def describe(self) -> str:  # pylint: disable=C0116
         self._require_repo('describe')
         return self.repo.git.describe('--always', '--tags')
 
-    def hash(self) -> str:
+    def hash(self) -> str:  # pylint: disable=C0116
         return self.describe().split('-g')[-1]
 
-    def is_dirty(self):
+    def is_dirty(self):  # pylint: disable=C0116
         self._require_repo('is_dirty')
         return self.repo.is_dirty()
 
-    def checkout(self, spec: str):
+    def checkout(self, spec: str):  # pylint: disable=C0116
         self._require_repo('checkout')
         return self.repo.git.checkout(spec)
 
@@ -141,7 +145,7 @@ class Repository:
         ).json_ld()
 
 
-def get_test_repo(directory, remote_url=None, tags=None, branches=None):
+def get_test_repo(directory: PathType, remote_url=None, tags=None, branches=None):
     """
     Since mocking a git repo is somewhat difficult, we provide this function to create a "real"
     git repository for testing.

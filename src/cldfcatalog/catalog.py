@@ -7,8 +7,9 @@ versions of the catalog (repository).
 """
 import re
 import sys
-import typing
+from typing import Optional
 import pathlib
+from collections.abc import Generator
 
 from cldfcatalog.repository import Repository
 from cldfcatalog.config import Config
@@ -22,7 +23,7 @@ class Catalog(Repository):
     """
     # If the catalog has a Python API, __api__ should point to the API class, which accepts
     # a repository directory as sole positional argument for initialization:
-    __api__ = None
+    __api__: Optional[type] = None
 
     # Catalogs are often used in command line applications. Thus, they need to refered to via
     # cli options or arguments. __cli_name__ can be used to specify a name for the catalog in these
@@ -32,8 +33,8 @@ class Catalog(Repository):
     def __init__(self, path, tag: str = None, not_git_repo_ok: bool = True):
         if isinstance(self.__api__, str):
             raise ValueError(
-                'API for catalog {0} is not available, please install {1}!'.format(
-                    self.__class__.__name__, self.__api__))
+                f'API for catalog {self.__class__.__name__} is not available, please install '
+                f'{self.__api__}!')
         super().__init__(path, not_git_repo_ok=not_git_repo_ok)
         if not self.repo and tag:
             raise ValueError('A tag can only be specified for cloned repositories!')
@@ -45,10 +46,11 @@ class Catalog(Repository):
 
     @classmethod
     def default_location(cls) -> pathlib.Path:
+        """A default location for a catalog repository clone."""
         return Config.dir().joinpath(cls.cli_name())
 
     @classmethod
-    def clone(cls, url, target: typing.Optional[pathlib.Path] = None) -> 'Catalog':
+    def clone(cls, url, target: Optional[pathlib.Path] = None) -> 'Catalog':
         res = cls(Repository.clone(url, target or cls.default_location()).dir)
         with Config.from_file() as cfg:
             cfg.add_clone(res.cli_name(), res.dir)
@@ -56,6 +58,7 @@ class Catalog(Repository):
 
     @classmethod
     def from_config(cls, key=None, fname=None, tag: str = None) -> 'Catalog':
+        """Initialize a catalog from config info."""
         cfg = Config.from_file(fname)
         return cls(cfg.get_clone(key or cls.cli_name()), tag=tag)
 
@@ -67,7 +70,7 @@ class Catalog(Repository):
             except TypeError:
                 try:
                     self._prev_head = self.repo.git.describe('--tags')
-                except Exception:  # pragma: no cover
+                except Exception:  # pragma: no cover  # pylint: disable=W0718
                     pass
             # ... then checkout the requested state:
             self.checkout(self.tag)
@@ -79,24 +82,27 @@ class Catalog(Repository):
             self._prev_head = None
 
     @classmethod
-    def cli_name(cls) -> str:
+    def cli_name(cls) -> str:  # pylint: disable=C0116
         return cls.__cli_name__ or cls.__name__.lower()
 
     @property
-    def api(self):
+    def api(self):  # pylint: disable=C0116
         if self.__api__ and self._api is None:
-            self._api = self.__api__(self.dir)
+            self._api = self.__api__(self.dir)  # pylint: disable=E1102
         return self._api
 
     @classmethod
-    def api_version(cls) -> typing.Union[str, None]:
+    def api_version(cls) -> Optional[str]:
+        """The version of the Python package providing the API for the repository."""
         if cls.__api__:
             try:
                 return sys.modules[cls.__api__.__module__.split('.')[0]].__version__
-            except Exception:  # pragma: no cover
+            except Exception:  # pragma: no cover  # pylint: disable=W0718
                 pass
+        return None  # pragma: no cover
 
-    def iter_versions(self) -> typing.Generator[typing.List[str], None, None]:
+    def iter_versions(self) -> Generator[list[str], None, None]:
+        """Yield (tag, name) pairs for the repository."""
         for line in reversed(self.repo.git.tag('-n').split('\n')):
             line = line.strip()
             if line.startswith('v'):

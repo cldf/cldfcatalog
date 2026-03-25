@@ -1,6 +1,6 @@
 # Changes
 
-## unreleased
+## [v1.7.0] - 2026-03-25
 
 - Drop 3.8 compat.
 - Lint the codebase.
